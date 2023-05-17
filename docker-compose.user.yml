@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   mongodb:
+    container_name: mongoDB
     image: mongo:latest
     hostname: "mongodb-dev"
     environment:
