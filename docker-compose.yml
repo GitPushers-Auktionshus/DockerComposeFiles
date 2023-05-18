@@ -2,22 +2,21 @@ version: '3.7'
 
 services:
   mongodb:
+    container_name: mongoDB
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: 1234
-      # MONGO_INITDB_ROOT_DATABASE: Users
     ports:
       - 27018:27017
     volumes:
       - mongodb_data_container:/data/db
-      # - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
       - default
 
   authentication:
-    image: authserviceapi
     container_name: authentication
+    image: authserviceapi
     environment:
       - ConnectionURI=mongodb://admin:1234@mongodb-dev:27017/?authSource=admin
       - DatabaseName=Users
@@ -33,6 +32,7 @@ services:
       - default
 
   loki:
+    container_name: loki
     image: grafana/loki
     ports:
       - "3100:3100"
@@ -41,6 +41,7 @@ services:
       - default
 
   grafana:
+    container_name: grafana
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
@@ -50,6 +51,7 @@ services:
       - grafana-storage:/var/lib/grafana
 
   vault_dev:
+    container_name: vault
     image: hashicorp/vault:latest
     restart: on-failure:10
     hostname: jacob
