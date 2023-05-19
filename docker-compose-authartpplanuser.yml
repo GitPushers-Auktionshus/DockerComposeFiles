@@ -15,7 +15,7 @@ services:
       - default
 
   articleservice:
-    image: articleserviceapi
+    image: gitpushers/articleserviceapi
     container_name: article
     environment:
       - HostnameVault=jacob
@@ -37,7 +37,7 @@ services:
       - article-image-storage:/srv/images
 
   userservice:
-    image: userserviceapi
+    image: gitpushers/userserviceapi
     container_name: user
     environment:
       - HostnameVault=jacob
@@ -53,7 +53,7 @@ services:
       - default
 
   auctionplanningservice:
-    image: auctionplanningserviceapi
+    image: gitpushers/auctionplanningserviceapi
     container_name: auctionplanning
     environment:
       - HostnameVault=jacob
@@ -71,7 +71,7 @@ services:
       - default
 
   authentication:
-    image: authserviceapi
+    image: gitpushers/authserviceapi
     container_name: authentication
     environment:
       - DatabaseName=Users
@@ -135,7 +135,7 @@ services:
 volumes:
   mongodb_data_container:
   grafana-storage:
-    external: true
+    external: false
   article-image-storage:
     external: false
 
