@@ -49,6 +49,7 @@ services:
     container_name: bidworker
     environment:
       - HostnameRabbit=rabbitmq-dev
+      - ConnectionURI=mongodb://admin:1234@mongodb-dev:27017/?authSource=admin
     ports:
       - 5002:80
     networks:
