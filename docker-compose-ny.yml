@@ -15,10 +15,10 @@ services:
       - default
 
   articleservice:
-    image: gitpushers/articleserviceapi
+    image: gitpushers/article-service:latest-dev
     container_name: article
     environment:
-      - HostnameVault=jacob
+      - HostnameVault=vault
       - ImagePath=/srv/images/
       - UsersDatabase=Users
       - UserCollection=user
@@ -37,11 +37,11 @@ services:
       - article-image-storage:/srv/images
 
   userservice:
-    image: gitpushers/userserviceapi
+    image: gitpushers/users-service:latest-dev
     container_name: user
     environment:
-      - HostnameVault=jacob
-      - UserDatabase=Users
+      - HostnameVault=vault
+      - UsersDatabase=Users
       - UserCollection=user
     ports:
       - 5004:80
@@ -53,10 +53,10 @@ services:
       - default
 
   auctionplanningservice:
-    image: gitpushers/auctionplanningserviceapi
+    image: gitpushers/auctionplanning-service:latest-dev
     container_name: auctionplanning
     environment:
-      - HostnameVault=jacob
+      - HostnameVault=vault
       - AuctionsDatabase=Auctions
       - AuctionCollection=listing
       - InventoryDatabase=Inventory
@@ -71,12 +71,12 @@ services:
       - default
 
   authentication:
-    image: gitpushers/authserviceapi
+    image: gitpushers/auth-service:latest-dev
     container_name: authentication
     environment:
-      - DatabaseName=Users
-      - CollectionName=user
-      - HostnameVault=jacob
+      - UsersDatabase=Users
+      - UserCollection=user
+      - HostnameVault=vault
     ports:
       - 5001:80
     depends_on:
@@ -106,7 +106,7 @@ services:
   vault_dev:
     image: hashicorp/vault:latest
     restart: on-failure:10
-    hostname: jacob
+    hostname: vault
     ports:
       - "8201:8201"
     environment:
