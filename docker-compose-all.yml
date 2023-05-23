@@ -15,7 +15,7 @@ services:
       - default
 
   articleservice:
-    image: articleserviceapi
+    image: gitpushers/article-service
     container_name: article
     environment:
       - HostnameVault=jacob
@@ -25,8 +25,8 @@ services:
       - AuctionHouseCollection=auctionhouse
       - InventoryDatabase=Inventory
       - ArticleCollection=article
-    ports:
-      - 5002:80
+    expose:
+      - "80"
     depends_on:
       - script
     healthcheck:
@@ -37,14 +37,14 @@ services:
       - article-image-storage:/srv/images
 
   userservice:
-    image: userserviceapi
+    image: gitpushers/users-service
     container_name: user
     environment:
       - HostnameVault=jacob
       - UserDatabase=Users
       - UserCollection=user
-    ports:
-      - 5004:80
+    expose:
+      - "80"
     depends_on:
       - script
     healthcheck:
@@ -53,7 +53,7 @@ services:
       - default
 
   auctionplanningservice:
-    image: auctionplanningserviceapi
+    image: gitpushers/auctionplanning-service:latest
     container_name: auctionplanning
     environment:
       - HostnameVault=jacob
@@ -61,8 +61,8 @@ services:
       - AuctionCollection=listing
       - InventoryDatabase=Inventory
       - ArticleCollection=article
-    ports:
-      - 5003:80
+    expose:
+      - "80"
     depends_on:
       - script
     healthcheck:
@@ -71,14 +71,14 @@ services:
       - default
 
   authentication:
-    image: authserviceapi
+    image: gitpushers/authserviceapi
     container_name: authentication
     environment:
       - DatabaseName=Users
       - CollectionName=user
       - HostnameVault=jacob
-    ports:
-      - 5001:80
+    expose:
+      - "80"
     depends_on:
       - script
     healthcheck:
@@ -148,13 +148,13 @@ services:
       retries: 5
 
   auctionservice:
-    image: auctionserviceapi
+    image: gitpushers/auction-service
     container_name: auctionservice
     environment:
       - ConnectionURI=mongodb://admin:1234@mongodb-dev:27017/?authSource=admin
       - HostnameRabbit=rabbitmq-dev
-    ports:
-      - 5006:80
+    expose:
+      - "80"
     networks:
       - default
     restart: on-failure
@@ -163,13 +163,13 @@ services:
         condition: service_healthy
 
   bidworkerservice:
-    image: bidworker
-    container_name: bidworker
+    image: gitpushers/bidengine-service
+    container_name: bidworkerservice
     environment:
       - HostnameRabbit=rabbitmq-dev
       - ConnectionURI=mongodb://admin:1234@mongodb-dev:27017/?authSource=admin
     ports:
-      - 5005:80
+      - 5002:80
     networks:
       - default
     healthcheck:
@@ -178,6 +178,22 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - articleservice
+      - userservice
+      - auctionplanningservice
+      - authentication
+      - auctionservice
+      - bidworkerservice
+    healthcheck:
+        retries: 5
+    ports:
+      - "4000:4000"
 
 volumes:
   mongodb_data_container:
