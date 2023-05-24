@@ -8,7 +8,7 @@ services:
     restart: on-failure:10
     hostname: jacob
     ports:
-      - "8201:8201"
+      - "8200:8200"
     environment:
       VAULT: 'http://0.0.0.0:8201'
       VAULT_ADDR: 'http://127.0.0.1:8200'
@@ -21,4 +21,14 @@ services:
       - ./vault-volume:/data
     healthcheck:
       retries: 5
-    command: sh -c "export VAULT_ADDR='http://127.0.0.1:8200' && export VAULT='http://0.0.0.0:8201' && vault server -dev -dev-root-token-id='00000000-0000-0000-0000-000000000000' && app/populate_vault.sh"
+    command: sh -c "export VAULT_ADDR='http://127.0.0.1:8200' && export VAULT='http://0.0.0.0:8201' && vault server -dev -dev-root-token-id='00000000-0000-0000-0000-000000000000' && fill.sh"
+
+  script:
+    image: hashicorp/vault:latest
+    command: sh -c "export VAULT_ADDR='http://127.0.0.1:8200' && fill.sh"
+    depends_on:
+      - vault_dev
+    healthcheck:
+      retries: 5
+    volumes:
+      - ./fill.sh:/fill.sh
