@@ -15,7 +15,7 @@ services:
       - default
 
   articleservice:
-    image: gitpushers/article-service
+    image: gitpushers/article-service:latest-dev
     container_name: article
     environment:
       - HostnameVault=jacob
@@ -37,11 +37,11 @@ services:
       - article-image-storage:/srv/images
 
   userservice:
-    image: gitpushers/users-service
+    image: gitpushers/users-service:latest-dev
     container_name: user
     environment:
       - HostnameVault=jacob
-      - UserDatabase=Users
+      - UsersDatabase=Users
       - UserCollection=user
     expose:
       - "80"
@@ -53,7 +53,7 @@ services:
       - default
 
   auctionplanningservice:
-    image: gitpushers/auctionplanning-service:latest
+    image: gitpushers/auctionplanning-service:latest-dev
     container_name: auctionplanning
     environment:
       - HostnameVault=jacob
@@ -71,11 +71,11 @@ services:
       - default
 
   authentication:
-    image: gitpushers/authserviceapi
+    image: gitpushers/auth-service:latest-dev
     container_name: authentication
     environment:
-      - DatabaseName=Users
-      - CollectionName=user
+      - UsersDatabase=Users
+      - UserCollection=user
       - HostnameVault=jacob
     expose:
       - "80"
@@ -148,11 +148,18 @@ services:
       retries: 5
 
   auctionservice:
-    image: gitpushers/auction-service
+    image: gitpushers/auction-service:latest-dev
     container_name: auctionservice
     environment:
-      - ConnectionURI=mongodb://admin:1234@mongodb-dev:27017/?authSource=admin
+      - HostnameVault=jacob
       - HostnameRabbit=rabbitmq-dev
+      - UsersDatabase=Users
+      - UserCollection=user
+      - AuctionHouseCollection=auctionhouse
+      - InventoryDatabase=Inventory
+      - ArticleCollection=article
+      - AuctionsDatabase=Auctions
+      - AuctionCollection=listing
     expose:
       - "80"
     networks:
@@ -163,13 +170,13 @@ services:
         condition: service_healthy
 
   bidworkerservice:
-    image: gitpushers/bidengine-service
+    image: gitpushers/bidengine-service:latest-dev
     container_name: bidworkerservice
     environment:
       - HostnameRabbit=rabbitmq-dev
       - ConnectionURI=mongodb://admin:1234@mongodb-dev:27017/?authSource=admin
-    ports:
-      - 5002:80
+    expose:
+      - "80"
     networks:
       - default
     healthcheck:
@@ -198,7 +205,7 @@ services:
 volumes:
   mongodb_data_container:
   grafana-storage:
-    external: true
+    external: false
   article-image-storage:
     external: false
 
