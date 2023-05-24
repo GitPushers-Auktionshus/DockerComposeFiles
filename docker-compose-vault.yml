@@ -2,33 +2,21 @@ version: '3.8'
 
 services:  
   vault_dev:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: hashicorp/vault:latest
     restart: on-failure:10
     hostname: jacob
     ports:
-      - "8200:8200"
+      - "8201:8201"
     environment:
-      VAULT: 'http://0.0.0.0:8201'
       VAULT_ADDR: 'http://127.0.0.1:8200'
-      VAULT_LOCAL_CONFIG: '{"listener": [{"tcp":{"address":"0.0.0.0:8201"}}], "default_lease_ttl": "168h", "max_lease_ttl": "720h"}, "ui": true}'
+      VAULT_LOCAL_CONFIG: '{"listener": [{"tcp":{"address":"0.0.0.0:8201","tls_disable":"0", "tls_cert_file":"/data/cert.pem","tls_key_file":"/data/key.pem"}}], "default_lease_ttl": "168h", "max_lease_ttl": "720h"}, "ui": true}'
       VAULT_DEV_ROOT_TOKEN_ID: '00000000-0000-0000-0000-000000000000'
       VAULT_TOKEN: '00000000-0000-0000-0000-000000000000'
     cap_add:
       - IPC_LOCK
     volumes:
       - ./vault-volume:/data
-    healthcheck:
-      retries: 5
-    command: sh -c "export VAULT_ADDR='http://127.0.0.1:8200' && export VAULT='http://0.0.0.0:8201' && vault server -dev -dev-root-token-id='00000000-0000-0000-0000-000000000000' && fill.sh"
-
-  script:
-    image: hashicorp/vault:latest
-    command: sh -c "export VAULT_ADDR='http://127.0.0.1:8200' && fill.sh"
-    depends_on:
-      - vault_dev
-    healthcheck:
-      retries: 5
-    volumes:
       - ./fill.sh:/fill.sh
+    healthcheck:
+      retries: 5
+    command: sh -c "export VAULT_ADDR='http://127.0.0.1:8200' && vault server -dev -dev-root-token-id='00000000-0000-0000-0000-000000000000' && fill.sh"
