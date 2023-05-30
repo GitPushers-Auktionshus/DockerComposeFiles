@@ -1,19 +1,6 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:latest
-    hostname: "mongodb-dev"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: 1234
-    ports:
-      - 27018:27017
-    volumes:
-      - mongodb_data_container:/data/db
-    networks:
-      - default
-
   articleservice:
     image: gitpushers/article-service:latest-dev
     container_name: article
@@ -27,12 +14,10 @@ services:
       - ArticleCollection=article
     expose:
       - "80"
-    depends_on:
-      - script
     healthcheck:
       retries: 5
     networks:
-      - default
+      - sharednetwork
     volumes:
       - article-image-storage:/srv/images
 
@@ -45,12 +30,10 @@ services:
       - UserCollection=user
     expose:
       - "80"
-    depends_on:
-      - script
     healthcheck:
       retries: 5
     networks:
-      - default
+      - sharednetwork
 
   auctionplanningservice:
     image: gitpushers/auctionplanning-service:latest-dev
@@ -63,12 +46,10 @@ services:
       - ArticleCollection=article
     expose:
       - "80"
-    depends_on:
-      - script
     healthcheck:
       retries: 5
     networks:
-      - default
+      - sharednetwork
 
   authentication:
     image: gitpushers/auth-service:latest-dev
@@ -79,74 +60,10 @@ services:
       - HostnameVault=jacob
     expose:
       - "80"
-    depends_on:
-      - script
     healthcheck:
       retries: 5
     networks:
-      - default
-
-  loki:
-    image: grafana/loki
-    ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
-    networks:
-      - default
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    networks:
-      - default
-    volumes:
-      - grafana-storage:/var/lib/grafana
-
-  vault_dev:
-    image: hashicorp/vault:latest
-    restart: on-failure:10
-    hostname: jacob
-    ports:
-      - "8201:8201"
-    environment:
-      VAULT_ADDR: 'https://0.0.0.0:8201'
-      VAULT_LOCAL_CONFIG: '{"listener": [{"tcp":{"address":"0.0.0.0:8201","tls_disable":"0", "tls_cert_file":"/data/cert.pem","tls_key_file":"/data/key.pem"}}], "default_lease_ttl": "168h", "max_lease_ttl": "720h"}, "ui": true}'
-      VAULT_DEV_ROOT_TOKEN_ID: '00000000-0000-0000-0000-000000000000'
-      VAULT_TOKEN: '00000000-0000-0000-0000-000000000000'
-    cap_add:
-      - IPC_LOCK
-    volumes:
-      - ./vault-volume:/data
-      - ./fill.sh:/fill.sh
-    healthcheck:
-      retries: 5
-    command: server -dev -dev-root-token-id="00000000-0000-0000-0000-000000000000"
-
-  script:
-    image: hashicorp/vault:latest
-    command: sh "/app/populate_vault.sh"
-    depends_on:
-      - vault_dev
-    healthcheck:
-      retries: 5
-    volumes:
-      - ./populate_vault.sh:/app/populate_vault.sh
-
-  rabbitmq:
-    image: rabbitmq:management
-    hostname: "rabbitmq-dev"
-    container_name: rabbitmq
-    ports:
-      - "15672:15672"
-      - "5672:5672"
-    networks:
-      - default
-    healthcheck:
-      test: "rabbitmq-diagnostics -q ping"
-      interval: 10s
-      timeout: 10s
-      retries: 5
+      - sharednetwork
 
   auctionservice:
     image: gitpushers/auction-service:latest-dev
@@ -164,11 +81,8 @@ services:
     expose:
       - "80"
     networks:
-      - default
+      - sharednetwork
     restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
 
   bidworkerservice:
     image: gitpushers/bidengine-service:latest-dev
@@ -183,13 +97,10 @@ services:
     expose:
       - "80"
     networks:
-      - default
+      - sharednetwork
     healthcheck:
         retries: 5
     restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
 
   nginx:
     image: nginx:latest
@@ -206,14 +117,14 @@ services:
         retries: 5
     ports:
       - "4000:4000"
+    networks:
+      - sharednetwork
 
 volumes:
-  mongodb_data_container:
-  grafana-storage:
-    external: false
   article-image-storage:
     external: false
 
 networks:
-  default:
+  sharednetwork:
     driver: bridge
+    external: true
