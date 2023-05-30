@@ -1,9 +1,9 @@
-# Guide til GitPushers auktionsplatform
+# **Guide til GitPushers auktionsplatform**
 > Anders, Frederik, Jacob & Jacob
 
 Her er en step-by-step guide til at benytte vores auktionsplatform lokalt og de forskellige endpoints som skal benyttes for at udføre en auktion.
 
-## 1. Opret Docker Netværk
+## **1. Opret Docker Netværk**
 ---
 Først logges der ind på din Docker bruger:
 ``` bash
@@ -15,7 +15,7 @@ Kør kommandoen:
 $ docker network create sharednetwork
 ```
 
-## 2. Docker Compose Filer
+## **2. Docker Compose Filer**
 ---
 Start med at hente de følgende Docker compose filer i vores GitHub repository **DockerComposeFiles**:
 * `docker-compose-services.yml`
@@ -52,8 +52,10 @@ $ docker compose -f docker-compose-services.yml up -d
 ```
 Nu burde alle services være oppe at køre (undtagen `script`-containeren), og vi kan nu tilgå de forskellige API-endpoints.
 
-## 3. Opret Bruger
+## **3. Opret Bruger**
 ---
+> Du kan følge med i **MongoDB Compass** for at se, om ting bliver gemt, ved at connecte til ``mongodb://admin:1234@localhost:27018/?authSource=admin``
+
 Du kan selv vælge om du vil tilgå de forskellige endpoints via Postman eller cURL scripts. I guiden benytter vi cURL scripts for hurtigere adgang og eksekvering.
 
 For at oprette en bruger, tilgår vi ``Users-service``. Du kan skrive følgende cURL-kommando ind i en shell terminal, for at oprette brugeren:
@@ -73,8 +75,19 @@ curl --request POST \
 	"Username": "henrik"
 }'
 ```
-> Du kan følge med i **MongoDB Compass** for at se, om din bruger bliver oprettet, ved at connecte til ``mongodb://admin:1234@localhost:27018/?authSource=admin``
-## 4. Login
+> Husk at gemme dit **userID** eller find det i databasen.
+
+Vi gemmer **userID** i en bash-variabel:
+``` bash
+$ userId="<indsæt userID her>
+```
+
+Test om variablen er gemt ved at køre kommandoen:
+``` bash
+$ echo $userId
+```
+
+## **4. Login**
 ---
 For at login, skal du bruge dit ``Username`` og ``Password`` til at tilgå login endpointen, som ligger i ``Auth-service``.
 Kør følgende kommando i terminalen:
@@ -90,82 +103,103 @@ curl --request POST \
 Efter login, får du en JWT-token returneret. Din token ser nogenlunde ud som denne:
 ``` bash
 {
-"token":
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImhlbnJpayIsImV4cCI6MTY4NTQ0MTcyMSwiaXNzIjoiSkFEQURBRERBQURBIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCJ9.PKotjwX3xb6NOilLOWtqObw6hd7WJsmYFuuIY9NyrZo"
+"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImhlbnJpayIsImV4cCI6MTY4NTQ0MTcyMSwiaXNzIjoiSkFEQURBRERBQURBIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCJ9.PKotjwX3xb6NOilLOWtqObw6hd7WJsmYFuuIY9NyrZo"
 }
 ```
 Denne token skal gemmes(kun strengen, uden " "), da den bruges til at tilgå endpoints som er beskyttet og som kræver **Authorization** for at tilgå dem.
+
+Vi gemmer også **token** i en bash-variabel:
+``` bash
+$ token="<indsæt token her>"
+```
 
 Du kan teste om din token virker, ved at køre følgende kommando i terminalen:
 ``` bash
 curl --request GET \
   --url http://localhost:4000/Users/getAllUsers \
-  --header 'Authorization: Bearer <indsæt din token her>'
+  --header "Authorization: Bearer $token"
 ```
-> Husk at indsætte din egen JWT-token ind i ovenstående script, uden < > og gem dit **userId** eller find det i databasen.
 
-## 5. Opret Auctionhouse
+## **5. Opret Auctionhouse**
 ---
 Næste trin er at oprette et auktionshus. Vi kalder ``addAuctionHouse`` endpointet i ``Users-service`` med følgende cURL kommando:
 ``` bash
 curl --location 'http://localhost:4000/Users/addAuctionhouse/' \
 --header 'Content-Type: application/json' \
---header 'Authorization: Bearer <indsæt din token her>' \
+--header "Authorization: Bearer $token" \
 --data '{
     "Name": "G&O",
     "Address": "Groennegade 45",
     "CvrNumber": "10150817"
 }'
 ```
-> Husk at gemme **auctionId** som bliver returneret i terminalen eller find det i databasen.
+> Husk at gemme **auctionID** som bliver returneret i terminalen eller find det i databasen.
 
-## 6. Opret Article
+Gemmer **auctionID** i en bash variabel:
+``` bash
+$ auctionhousedId="<indsæt auctionId her>
+```
+
+## **6. Opret Article**
 --- 
 Næste trin er at oprette en effekt, som skal lægges op til auktion. Vi kalder ``addArticle`` endpointet i ``Article-service`` med følgende cURL kommando:
 ``` bash
 curl --request POST \
   --url http://localhost:4000/ArticleService/addArticle \
-  --header 'Authorization: Bearer <indsæt din token her>' \
+  --header "Authorization: Bearer $token" \
   --header 'Content-Type: application/json' \
   --data '{
   "Name": "Spisestol",
   "NoReserve": true,
   "EstimatedPrice": 4556,
-  "Description": "Lækker kvalitet, ægte gedeskind",
+  "Description": "Laekker kvalitet, aegte gedeskind",
   "Category": "CH",
   "Sold": false,
-  "AuctionhouseID": "<indsæt auctionhouseID her>",
-  "SellerID": "<indsæt dit userID her>",
+  "AuctionhouseID": "'"$auctionhouseId"'",
+  "SellerID": "'"$userId"'",
   "MinPrice": 2400,
   "BuyerID": ""
 }'
 ```
-> Husk at indsætte din egen JWT-token, **userID** og **auctionhouseID** i ovenstående commando og gem den returnerede **articleID**.
+> Husk at gemme den returnerede **articleID** som bliver returneret i terminalen eller find det i databasen.
 
-## 7. Opret Auction
+Vi gemmer også **articleID** i en bash variabel:
+``` bash
+$ articleId="<indsæt articleId her>"
+```
+
+## **7. Opret Auction**
 ---
 Næste skridt er, at oprette en auktion med den nyoprettede effekt. Vi kalder ``addAuction`` endpointet i ``AuctionPlanning-service`` med følgende cURL kommando:
 ``` bash
 curl --location 'http://localhost:4000/AuctionPlanning/addAuction' \
 --header 'Content-Type: application/json' \
---header 'Authorization: Bearer <indsæt din token her>' \
+--header "Authorization: Bearer $token" \
 --data '{
   "StartDate": "2023-05-30T12:00:00",
   "EndDate": "2023-06-05T14:00:00",
-  "ArticleID": "<indsæt articleID>"
+  "ArticleID": "'"$articleId"'"
 }'
 ```
+> Husk at gemme den returnerede **auctionID** som bliver returneret i terminalen eller find det i databasen.
 
-## 8. Add Bid
+Vi gemmer også **auctionID** i en bash variabel:
+``` bash
+$ auctionId="<indsæt auctionID her>"
+```
+
+## **8. Add Bid**
 ---
 Til sidst skal vi tilføje et bud til vores nye auktion. Det gør vi ved at kalde addBid endpointet i Auction-service med følgende cUrl kommando:
 ``` bash
 curl --location --request PUT 'http://localhost:4000/AuctionService/addBid' \
 --header 'Content-Type: application/json' \
---header 'Authorization: Bearer <indsæt din token her>' \
+--header "Authorization: Bearer $token" \
 --data '{
     "Price": 2400,
-    "BidderID": "<indsæt userID",
-    "AuctionID": "<indsæt auctionID>"
+    "BidderID": "'"$userId"'",
+    "AuctionID": "'"$auctionId"'"
 }'
 ```
+
+Vi har nu været igennem hele flowet for en auktion.
