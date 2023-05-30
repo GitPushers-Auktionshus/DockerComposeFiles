@@ -28,6 +28,7 @@ services:
       - HostnameVault=jacob
       - UsersDatabase=Users
       - UserCollection=user
+      - AuctionHouseCollection=auctionhouse
     expose:
       - "80"
     healthcheck:
