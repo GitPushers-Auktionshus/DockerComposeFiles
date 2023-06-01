@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   articleservice:
-    image: gitpushers/article-service:latest-dev
+    image: gitpushers/article-service:dockercompose
     container_name: article
     environment:
       - HostnameVault=jacob
@@ -22,7 +22,7 @@ services:
       - article-image-storage:/srv/images
 
   userservice:
-    image: gitpushers/users-service:latest-dev
+    image: gitpushers/users-service:dockercompose
     container_name: user
     environment:
       - HostnameVault=jacob
@@ -37,7 +37,7 @@ services:
       - sharednetwork
 
   auctionplanningservice:
-    image: gitpushers/auctionplanning-service:latest-dev
+    image: gitpushers/auctionplanning-service:dockercompose
     container_name: auctionplanning
     environment:
       - HostnameVault=jacob
@@ -53,7 +53,7 @@ services:
       - sharednetwork
 
   authentication:
-    image: gitpushers/auth-service:latest-dev
+    image: gitpushers/auth-service:dockercompose
     container_name: authentication
     environment:
       - UsersDatabase=Users
@@ -67,7 +67,7 @@ services:
       - sharednetwork
 
   auctionservice:
-    image: gitpushers/auction-service:latest-dev
+    image: gitpushers/auction-service:dockercompose
     container_name: auctionservice
     environment:
       - HostnameVault=jacob
@@ -86,7 +86,7 @@ services:
     restart: on-failure
 
   bidworkerservice:
-    image: gitpushers/bidengine-service:latest-dev
+    image: gitpushers/bidengine-service:dockercompose
     container_name: bidworkerservice
     environment:
       - HostnameRabbit=rabbitmq-dev
