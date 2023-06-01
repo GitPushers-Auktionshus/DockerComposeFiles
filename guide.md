@@ -54,9 +54,12 @@ Nu burde alle services være oppe at køre (undtagen `script`-containeren), og v
 
 ## **3. Opret Bruger**
 ---
-> Du kan følge med i **MongoDB Compass** for at se, om ting bliver gemt, ved at connecte til ``mongodb://admin:1234@localhost:27018/?authSource=admin``
+> Du kan følge med i **MongoDB Compass** for at se, om ting bliver gemt, ved at connecte til databasen i Compass: ``mongodb://admin:1234@localhost:27018/?authSource=admin``
 
 Du kan selv vælge om du vil tilgå de forskellige endpoints via Postman eller cURL scripts. I guiden benytter vi cURL scripts for hurtigere adgang og eksekvering.
+
+> Du kan også få adgang til vores workspace i Postman med dette link, hvis du vil tilgå alle endpoints:  
+https://app.getpostman.com/join-team?invite_code=66c0fe8b87be0d2e4a8d9095776f6fc0&target_code=92e0ede8725339269ba758278c79a4b3
 
 For at oprette en bruger, tilgår vi ``Users-service``. Du kan skrive følgende cURL-kommando ind i en shell terminal, for at oprette brugeren:
 ``` bash
@@ -185,7 +188,7 @@ curl --location 'http://localhost:4000/AuctionPlanning/addAuction' \
 --header "Authorization: Bearer $token" \
 --data '{
   "StartDate": "2023-05-30T12:00:00",
-  "EndDate": "2023-06-05T14:00:00",
+  "EndDate": "2023-06-20T14:00:00",
   "ArticleID": "'"$articleId"'"
 }'
 ```
